@@ -1,10 +1,12 @@
 import os
+from datetime import datetime
 from typing import Any
 
 import pandas as pd
 import requests
 import streamlit as st
 
+from ui_footer import render_footer
 
 # -----------------------------
 # Config
@@ -195,6 +197,23 @@ def safe_get(d: dict, key: str, default: Any = None) -> Any:
     return d.get(key, default) if isinstance(d, dict) else default
 
 
+def format_datetime(value: Any) -> str:
+    if not value:
+        return "N/A"
+    if isinstance(value, datetime):
+        return value.strftime("%Y-%m-%d %H:%M")
+    if isinstance(value, str):
+        cleaned = value
+        if len(cleaned) >= 4 and cleaned[:3].isdigit() and cleaned[3] == "-":
+            cleaned = f"2{cleaned}"
+        try:
+            parsed = datetime.fromisoformat(cleaned)
+            return parsed.strftime("%Y-%m-%d %H:%M")
+        except ValueError:
+            return value
+    return str(value)
+
+
 # -----------------------------
 # Sidebar controls + Sidebar Footer
 # -----------------------------
@@ -339,7 +358,7 @@ with shell_left:
         next_outage_sub = "No outages today"
         if isinstance(next_outage, dict) and next_outage.get("start"):
             next_outage_text = "Scheduled"
-            next_outage_sub = str(next_outage.get("start"))
+            next_outage_sub = format_datetime(next_outage.get("start"))
 
         total_minutes = summary.get("total_outage_minutes_today", 0)
 
@@ -397,8 +416,8 @@ with shell_left:
                     continue
                 rows.append(
                     {
-                        "Start": event.get("start"),
-                        "End": event.get("end"),
+                        "Start": format_datetime(event.get("start")),
+                        "End": format_datetime(event.get("end")),
                         "Note": event.get("note", ""),
                     }
                 )
@@ -481,3 +500,5 @@ with shell_right:
         st.markdown("</div>", unsafe_allow_html=True)
     else:
         st.caption("Analytics will appear after fetching insights.")
+
+render_footer()
