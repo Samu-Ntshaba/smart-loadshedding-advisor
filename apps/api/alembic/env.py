@@ -1,11 +1,19 @@
+import sys
+from pathlib import Path
 from logging.config import fileConfig
 
 from alembic import context
 from sqlalchemy import engine_from_config, pool
 
-from apps.api.app.core.config import settings
-from apps.api.app.db.base import Base
-from apps.api.app.db import models  # noqa: F401
+# Ensure the project root is on PYTHONPATH so `import apps...` works when running Alembic locally
+BASE_DIR = (
+    Path(__file__).resolve().parents[3]
+)  # -> project root (smart-loadshedding-advisor/)
+sys.path.append(str(BASE_DIR))
+
+from apps.api.app.core.config import settings  # noqa: E402
+from apps.api.app.db.base import Base  # noqa: E402
+from apps.api.app.db import models  # noqa: F401, E402
 
 config = context.config
 
@@ -33,8 +41,9 @@ def run_migrations_offline() -> None:
 
 
 def run_migrations_online() -> None:
-    configuration = config.get_section(config.config_ini_section)
+    configuration = config.get_section(config.config_ini_section) or {}
     configuration["sqlalchemy.url"] = get_url()
+
     connectable = engine_from_config(
         configuration,
         prefix="sqlalchemy.",
