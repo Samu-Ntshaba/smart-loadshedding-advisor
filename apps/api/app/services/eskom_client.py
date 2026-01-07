@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+
 import requests
 
 from apps.api.app.core.config import settings
@@ -25,16 +26,10 @@ class EskomClient:
 
     def _get(self, path: str, params: dict | None = None) -> dict:
         url = f"{self.BASE_URL}{path}"
-        try:
-            response = requests.get(
-                url, headers=self._headers(), params=params, timeout=10
-            )
-        except requests.RequestException as exc:
-            raise EskomAPIError(status_code=503, message=str(exc)) from exc
-
-        if response.status_code >= 400:
+        response = requests.get(url, headers=self._headers(), params=params, timeout=10)
+        if response.status_code == 429 or response.status_code >= 500:
             raise EskomAPIError(status_code=response.status_code, message=response.text)
-
+        response.raise_for_status()
         return response.json()
 
     def search_areas(self, text: str) -> dict:
@@ -44,19 +39,4 @@ class EskomClient:
         return self._get("/area", params={"id": area_id})
 
     def get_status_current(self) -> dict:
-        candidates = [
-            "/status/current",
-            "/status",
-        ]
-
-        last: EskomAPIError | None = None
-        for path in candidates:
-            try:
-                return self._get(path)
-            except EskomAPIError as exc:
-                last = exc
-                continue
-
-        msg = last.message if last else "Status endpoint unavailable"
-        code = last.status_code if last else 503
-        raise EskomAPIError(status_code=code, message=msg)
+        return self._get("/status/current")

@@ -108,8 +108,6 @@ with st.sidebar:
     else:
         st.selectbox("Select area", options=["No results yet"], disabled=True)
         selected_index = 0
-    notes = st.text_area("Notes (optional)", placeholder="WFH 9-5, medical equipment, etc.")
-
     if st.button("Get Advice", use_container_width=True, type="primary"):
         if not area_options:
             st.warning("Search for an area first.")
@@ -119,7 +117,6 @@ with st.sidebar:
                 "area_id": selected_area.get("id"),
                 "area_name": selected_area.get("name"),
                 "query": query,
-                "notes": notes or None,
             }
             try:
                 st.session_state.insights = api_post("/advisor/insights", payload)
@@ -211,3 +208,19 @@ with right:
             st.info("Collecting stage history — come back tomorrow.")
     else:
         st.caption("Analytics appear after fetching insights.")
+
+st.markdown(
+    """
+    <div style="margin-top: 40px; padding: 18px; border-top: 1px solid #e6ecf5; text-align: center;">
+        <div style="font-weight: 600; color: #0b1f3a; margin-bottom: 6px;">
+            Created by Simge Lunchaba
+        </div>
+        <div style="font-size: 18px;">
+            <a href="#" style="text-decoration: none; margin: 0 10px;">🌐</a>
+            <a href="#" style="text-decoration: none; margin: 0 10px;">💼</a>
+            <a href="#" style="text-decoration: none; margin: 0 10px;">🐙</a>
+        </div>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)

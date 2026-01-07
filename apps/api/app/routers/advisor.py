@@ -22,7 +22,6 @@ class InsightsRequest(BaseModel):
     area_id: str = Field(..., description="Selected area identifier")
     area_name: str = Field(..., description="Selected area name")
     query: str = Field(..., description="User search query")
-    notes: str | None = Field(None, description="Optional user context")
 
 
 def _extract_stage(status_payload: dict) -> int:
@@ -71,7 +70,6 @@ def _generate_ai_advice(
     area_name: str,
     stage: int,
     events: list[dict[str, Any]],
-    notes: str | None,
 ) -> str:
     if not settings.openai_key:
         return "AI advice is unavailable because the OpenAI key is not configured."
@@ -79,14 +77,12 @@ def _generate_ai_advice(
     event_lines = "\n".join(
         f"- {event.get('start')} to {event.get('end')}" for event in events
     )
-    notes_line = f"User notes: {notes}" if notes else "User notes: none"
     prompt = (
         "You are a South Africa energy advisor. Provide short, practical advice based only "
         "on the supplied schedule times. Do not invent new times.\n\n"
         f"Area: {area_name}\n"
         f"Stage: {stage}\n"
         f"Outage windows:\n{event_lines or '- none'}\n"
-        f"{notes_line}\n\n"
         "Output format:\n"
         "Today at a glance: 2-3 short lines.\n"
         "Action plan: bullet list (max 8 bullets).\n"
@@ -112,6 +108,15 @@ def _generate_ai_advice(
 def advisor_insights(payload: InsightsRequest, db: Session = Depends(get_db)) -> dict:
     now = datetime.now(JOHANNESBURG_TZ)
     cache_service = CacheService(db)
+    end_of_day = datetime.combine(now.date(), time(23, 59, 59), tzinfo=JOHANNESBURG_TZ)
+
+    advisor_key = f"advisor:insights:{payload.area_id}:{now.date().isoformat()}"
+    advisor_cache = cache_service.get_cached_request(advisor_key, now)
+    if advisor_cache:
+        cached_payload = advisor_cache.data_json
+        cached_payload.setdefault("cache", {})
+        cached_payload["cache"]["advisor"] = "cache"
+        return cached_payload
 
     status_key = f"status:current:{now:%Y-%m-%d}:{now:%H}"
     status_cache = cache_service.get_cached_request(status_key, now)
@@ -142,21 +147,22 @@ def advisor_insights(payload: InsightsRequest, db: Session = Depends(get_db)) ->
         except EskomAPIError as exc:
             raise HTTPException(status_code=503, detail=exc.message) from exc
         area_source = "live"
-        end_of_day = datetime.combine(now.date(), time(23, 59, 59), tzinfo=JOHANNESBURG_TZ)
         cache_service.set_cached_request(area_key, area_data, now, end_of_day)
 
     events = area_data.get("events", [])
     summary = _summarize_events(events, now)
     stage = _extract_stage(status_data)
-    ai_advice = _generate_ai_advice(payload.area_name, stage, events, payload.notes)
+    ai_advice = _generate_ai_advice(payload.area_name, stage, events)
 
-    return {
+    response_payload = {
         "stage": stage,
         "events": events,
         "summary": summary,
         "ai_advice": ai_advice,
-        "cache": {"status": status_source, "area": area_source},
+        "cache": {"status": status_source, "area": area_source, "advisor": "live"},
     }
+    cache_service.set_cached_request(advisor_key, response_payload, now, end_of_day)
+    return response_payload
 
 
 @router.get("/analytics")
