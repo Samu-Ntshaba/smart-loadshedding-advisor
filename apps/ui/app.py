@@ -33,7 +33,7 @@ def api_post(path: str, payload: dict) -> dict:
 # Page setup
 # -----------------------------
 st.set_page_config(
-    page_title="Smart Loadshedding Advisor",
+    page_title="StageWatch AI Advisor",
     page_icon="⚡",
     layout="wide",
 )
@@ -47,6 +47,7 @@ st.markdown(
 
     <style>
       .sla-shell { max-width: 1200px; margin: 0 auto; }
+
       .sla-hero {
         background: linear-gradient(135deg, #0b1f3a 0%, #102b52 55%, #16406b 100%);
         color: #ffffff;
@@ -55,21 +56,37 @@ st.markdown(
         margin-bottom: 18px;
         box-shadow: 0 14px 28px rgba(15, 30, 60, 0.35);
       }
-      .sla-hero h1 { font-size: 32px; margin: 0 0 6px 0; letter-spacing: 0.2px; }
-      .sla-hero p { margin: 0; opacity: 0.9; font-size: 15px; }
 
-      .sla-pill {
-        display: inline-flex;
+      .sla-brand {
+        display: flex;
         align-items: center;
-        gap: 8px;
-        padding: 7px 12px;
-        border-radius: 999px;
-        background: rgba(255,255,255,0.12);
-        border: 1px solid rgba(255,255,255,0.18);
-        font-size: 12px;
-        margin-top: 10px;
+        gap: 12px;
+        margin-bottom: 8px;
       }
-      .sla-pill i { opacity: 0.95; }
+      .sla-brand .logo {
+        width: 46px; height: 46px;
+        border-radius: 14px;
+        background: rgba(255,255,255,0.14);
+        border: 1px solid rgba(255,255,255,0.18);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 10px 18px rgba(0,0,0,0.12);
+      }
+      .sla-brand .logo i {
+        font-size: 20px;
+        color: #ffffff;
+      }
+      .sla-brand h1 {
+        font-size: 30px;
+        margin: 0;
+        letter-spacing: 0.2px;
+      }
+      .sla-hero p {
+        margin: 0;
+        opacity: 0.9;
+        font-size: 15px;
+      }
 
       .sla-card {
         background: #ffffff;
@@ -107,42 +124,56 @@ st.markdown(
       .sla-metric .value { font-size: 20px; font-weight: 700; color: #0b1f3a; }
       .sla-metric .sub { font-size: 12px; color: rgba(15, 30, 60, 0.70); margin-top: 4px; }
 
-      .sla-footer {
-        margin-top: 30px;
-        padding: 18px 0 8px 0;
-        border-top: 1px solid #e6ecf5;
-        text-align: center;
+      /* Sidebar footer */
+      .sla-side-footer {
+        margin-top: 22px;
+        padding-top: 14px;
+        border-top: 1px solid rgba(230,236,245,0.9);
       }
-      .sla-footer .name { font-weight: 700; color: #0b1f3a; margin-bottom: 8px; }
-      .sla-links a {
+      .sla-side-footer .name {
+        font-weight: 700;
+        color: #0b1f3a;
+        margin-bottom: 8px;
+      }
+      .sla-side-links a {
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        width: 40px; height: 40px;
+        width: 38px; height: 38px;
         border-radius: 999px;
         border: 1px solid #e6ecf5;
-        margin: 0 6px;
+        margin-right: 8px;
         color: #0b1f3a;
         text-decoration: none;
         background: #fff;
         box-shadow: 0 8px 16px rgba(17, 24, 39, 0.06);
       }
-      .sla-links a:hover { background: #f7faff; }
+      .sla-side-links a:hover { background: #f7faff; }
+      .sla-small {
+        font-size: 12px;
+        color: rgba(15, 30, 60, 0.72);
+        margin-top: 8px;
+        line-height: 1.35;
+      }
     </style>
     """,
     unsafe_allow_html=True,
 )
 
+# -----------------------------
+# Hero (NO API shown)
+# -----------------------------
 st.markdown(
-    f"""
+    """
     <div class="sla-shell">
       <div class="sla-hero">
-        <h1>Smart Loadshedding Advisor</h1>
-        <p>AI-powered Eskom schedule insights for South Africa — plan smarter, stay powered.</p>
-        <div class="sla-pill">
-          <i class="fa-solid fa-link"></i>
-          <span>API: <b>{API_BASE_URL}</b></span>
+        <div class="sla-brand">
+          <div class="logo" aria-label="StageWatch AI Advisor logo">
+            <i class="fa-solid fa-bolt"></i>
+          </div>
+          <h1>StageWatch AI Advisor</h1>
         </div>
+        <p>AI-powered load-shedding schedule insights for South Africa — plan smarter, stay powered.</p>
       </div>
     </div>
     """,
@@ -165,7 +196,7 @@ def safe_get(d: dict, key: str, default: Any = None) -> Any:
 
 
 # -----------------------------
-# Sidebar controls
+# Sidebar controls + Sidebar Footer
 # -----------------------------
 with st.sidebar:
     st.markdown(
@@ -259,6 +290,24 @@ with st.sidebar:
                 st.error(f"Advisor request failed (HTTP): {exc}")
             except requests.RequestException as exc:
                 st.error(f"Advisor request failed: {exc}")
+
+    # ---- Sidebar footer (always at end of sidebar) ----
+    st.markdown(
+        """
+        <div class="sla-side-footer">
+          <div class="name">Created by Simukelo Ntshaba</div>
+          <div class="sla-side-links">
+            <a href="#" target="_blank" title="Website"><i class="fa-solid fa-globe"></i></a>
+            <a href="#" target="_blank" title="LinkedIn"><i class="fa-brands fa-linkedin-in"></i></a>
+            <a href="#" target="_blank" title="GitHub"><i class="fa-brands fa-github"></i></a>
+          </div>
+          <div class="sla-small">
+            Eskom schedules vary. Always verify with your local municipality when in doubt.
+          </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
 
 
 insights = st.session_state.insights
@@ -432,27 +481,3 @@ with shell_right:
         st.markdown("</div>", unsafe_allow_html=True)
     else:
         st.caption("Analytics will appear after fetching insights.")
-
-# -----------------------------
-# Footer (replace placeholders with your real links)
-# -----------------------------
-# Update these to your real profiles if you want:
-WEBSITE_URL = "#"
-LINKEDIN_URL = "#"
-GITHUB_URL = "#"
-
-st.markdown(
-    f"""
-    <div class="sla-shell">
-      <div class="sla-footer">
-        <div class="name">Created by Simukelo Ntshaba</div>
-        <div class="sla-links">
-          <a href="{WEBSITE_URL}" target="_blank" title="Website"><i class="fa-solid fa-globe"></i></a>
-          <a href="{LINKEDIN_URL}" target="_blank" title="LinkedIn"><i class="fa-brands fa-linkedin-in"></i></a>
-          <a href="{GITHUB_URL}" target="_blank" title="GitHub"><i class="fa-brands fa-github"></i></a>
-        </div>
-      </div>
-    </div>
-    """,
-    unsafe_allow_html=True,
-)
