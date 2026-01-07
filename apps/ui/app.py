@@ -79,7 +79,9 @@ if "analytics" not in st.session_state:
 with st.sidebar:
     st.header("Find your area")
     st.caption("Powered by EskomSePush • Electricity advisory")
-    query = st.text_input("Search area", placeholder="e.g. Fourways", key="search_query")
+    query = st.text_input(
+        "Search area", placeholder="e.g. Fourways", key="search_query"
+    )
     if st.button("Search Eskom areas", use_container_width=True):
         if not query.strip():
             st.warning("Enter an area name to search.")
@@ -87,7 +89,9 @@ with st.sidebar:
             try:
                 response = api_get("/eskom/areas-search", params={"text": query})
                 data = response.get("data", {})
-                st.session_state.area_results = data.get("areas", data.get("results", []))
+                st.session_state.area_results = data.get(
+                    "areas", data.get("results", [])
+                )
                 st.success(f"Found {len(st.session_state.area_results)} areas.")
             except requests.RequestException as exc:
                 st.error(f"Area search failed: {exc}")
@@ -213,7 +217,7 @@ st.markdown(
     """
     <div style="margin-top: 40px; padding: 18px; border-top: 1px solid #e6ecf5; text-align: center;">
         <div style="font-weight: 600; color: #0b1f3a; margin-bottom: 6px;">
-            Created by Simge Lunchaba
+            Created by Simukelo ntshaba
         </div>
         <div style="font-size: 18px;">
             <a href="#" style="text-decoration: none; margin: 0 10px;">🌐</a>
