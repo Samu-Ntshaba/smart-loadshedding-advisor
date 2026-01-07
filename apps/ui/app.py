@@ -4,7 +4,9 @@ import pandas as pd
 import requests
 import streamlit as st
 
-API_BASE_URL = os.getenv("API_BASE_URL", "http://localhost:8000")
+API_BASE_URL = (
+    st.secrets.get("API_BASE_URL", None) if hasattr(st, "secrets") else None
+) or os.getenv("API_BASE_URL", "http://localhost:8000")
 
 st.set_page_config(page_title="Smart Loadshedding Advisor", layout="wide")
 st.markdown(
@@ -57,14 +59,18 @@ st.markdown(
 )
 
 
-def api_get(path: str, params: dict | None = None) -> dict:
-    response = requests.get(f"{API_BASE_URL}{path}", params=params, timeout=10)
+def api_url(path: str) -> str:
+    return f"{API_BASE_URL.rstrip('/')}/{path.lstrip('/')}"
+
+
+def api_get(path: str, **kwargs) -> dict:
+    response = requests.get(api_url(path), timeout=20, **kwargs)
     response.raise_for_status()
     return response.json()
 
 
-def api_post(path: str, payload: dict) -> dict:
-    response = requests.post(f"{API_BASE_URL}{path}", json=payload, timeout=15)
+def api_post(path: str, json: dict | None = None, **kwargs) -> dict:
+    response = requests.post(api_url(path), json=json, timeout=20, **kwargs)
     response.raise_for_status()
     return response.json()
 
@@ -123,7 +129,9 @@ with st.sidebar:
                 "query": query,
             }
             try:
-                st.session_state.insights = api_post("/advisor/insights", payload)
+                st.session_state.insights = api_post(
+                    "/advisor/insights", json=payload
+                )
                 st.session_state.analytics = api_get(
                     "/advisor/analytics", params={"area_id": selected_area.get("id")}
                 )

@@ -45,6 +45,27 @@ Set these in `.env` (see `.env.example`):
 - `DATABASE_URL`: Postgres connection string.
 - `API_BASE_URL`: Base URL for the API used by Streamlit (defaults to `http://localhost:8000`).
 
+## Deploy on Railway (API + UI)
+
+Create two Railway services in the same project, both connected to this repo.
+
+### API service
+
+- Start command:
+  ```bash
+  uvicorn apps.api.app.main:app --host 0.0.0.0 --port $PORT
+  ```
+- Keep the existing API environment variables.
+
+### UI service
+
+- Start command:
+  ```bash
+  streamlit run apps/ui/app.py --server.port $PORT --server.address 0.0.0.0
+  ```
+- Environment variables:
+  - `API_BASE_URL=https://smart-loadshedding-advisor-production.up.railway.app`
+
 ## Folder Structure
 
 ```
