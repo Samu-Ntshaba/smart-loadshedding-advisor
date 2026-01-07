@@ -1,6 +1,6 @@
 import streamlit as st
 
-from apps.ui.ui_footer import render_footer
+from ui_footer import render_footer
 
 
 st.set_page_config(page_title="Terms & Conditions", page_icon="📄", layout="wide")
