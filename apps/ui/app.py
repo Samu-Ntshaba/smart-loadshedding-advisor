@@ -7,8 +7,54 @@ import streamlit as st
 API_BASE_URL = os.getenv("API_BASE_URL", "http://localhost:8000")
 
 st.set_page_config(page_title="Smart Loadshedding Advisor", layout="wide")
-st.title("Smart Loadshedding Advisor")
-st.caption("Get live Eskom schedule insights with practical tips for your area.")
+st.markdown(
+    """
+    <style>
+    .sla-hero {
+        background: linear-gradient(135deg, #0b1f3a 0%, #102b52 55%, #16406b 100%);
+        color: #ffffff;
+        padding: 24px 28px;
+        border-radius: 16px;
+        margin-bottom: 18px;
+        box-shadow: 0 12px 24px rgba(15, 30, 60, 0.35);
+    }
+    .sla-hero h1 {
+        font-size: 32px;
+        margin: 0 0 6px 0;
+    }
+    .sla-hero p {
+        margin: 0;
+        opacity: 0.85;
+    }
+    .sla-card {
+        background: #ffffff;
+        border-radius: 14px;
+        padding: 16px;
+        border: 1px solid #e6ecf5;
+        box-shadow: 0 8px 16px rgba(17, 24, 39, 0.08);
+    }
+    .sla-badge {
+        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 999px;
+        font-size: 12px;
+        background: #eef4ff;
+        color: #1e3a8a;
+        margin-left: 6px;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+st.markdown(
+    """
+    <div class="sla-hero">
+        <h1>Smart Loadshedding Advisor</h1>
+        <p>AI-powered Eskom schedule insights for South Africa — plan smarter, stay powered.</p>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
 
 
 def api_get(path: str, params: dict | None = None) -> dict:
@@ -32,8 +78,9 @@ if "analytics" not in st.session_state:
 
 with st.sidebar:
     st.header("Find your area")
+    st.caption("Powered by EskomSePush • Electricity advisory")
     query = st.text_input("Search area", placeholder="e.g. Fourways", key="search_query")
-    if st.button("Search", use_container_width=True):
+    if st.button("Search Eskom areas", use_container_width=True):
         if not query.strip():
             st.warning("Enter an area name to search.")
         else:
@@ -95,7 +142,7 @@ with left:
         summary = insights.get("summary", {})
         cache = insights.get("cache", {})
         col1, col2, col3 = st.columns(3)
-        col1.metric("Current Stage", f"Stage {stage}")
+        col1.metric("Current Eskom Stage", f"Stage {stage}")
         next_outage = summary.get("next_outage")
         col2.metric(
             "Next Outage",
@@ -106,7 +153,11 @@ with left:
             "Total Outage Minutes Today",
             summary.get("total_outage_minutes_today", 0),
         )
-        st.caption(f"Status source: {cache.get('status', 'live')} • Area source: {cache.get('area', 'live')}")
+        st.markdown(
+            f"Status source: <span class='sla-badge'>{cache.get('status', 'live')}</span> "
+            f"Area source: <span class='sla-badge'>{cache.get('area', 'live')}</span>",
+            unsafe_allow_html=True,
+        )
     else:
         st.info("Search for an area and click Get Advice to view your schedule.")
 
@@ -130,7 +181,12 @@ with left:
 
     st.subheader("AI Advice")
     if insights:
-        st.markdown(insights.get("ai_advice", "No advice available."))
+        advice = insights.get("ai_advice", "No advice available.")
+        advice_html = advice.replace("\n", "<br/>")
+        st.markdown(
+            f"<div class='sla-card'>{advice_html}</div>",
+            unsafe_allow_html=True,
+        )
     else:
         st.caption("AI advice will appear after fetching insights.")
 
