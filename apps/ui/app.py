@@ -6,7 +6,7 @@ import pandas as pd
 import requests
 import streamlit as st
 
-from ui_footer import render_footer
+from apps.ui.ui_footer import render_footer
 
 # -----------------------------
 # Config
