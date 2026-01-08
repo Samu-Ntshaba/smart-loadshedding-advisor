@@ -297,9 +297,9 @@ with st.sidebar:
         <div class="sla-side-footer">
           <div class="name">Created by Simukelo Ntshaba</div>
           <div class="sla-side-links">
-            <a href="#" target="_blank" title="Website"><i class="fa-solid fa-globe"></i></a>
-            <a href="#" target="_blank" title="LinkedIn"><i class="fa-brands fa-linkedin-in"></i></a>
-            <a href="#" target="_blank" title="GitHub"><i class="fa-brands fa-github"></i></a>
+            <a href="https://simukelo-ntshaba.up.railway.app/" target="_blank" title="Website"><i class="fa-solid fa-globe"></i></a>
+            <a href="https://www.linkedin.com/in/simukelo-ntshaba-b63565177/" target="_blank" title="LinkedIn"><i class="fa-brands fa-linkedin-in"></i></a>
+            <a href="http://github.com/Samu-Ntshaba" target="_blank" title="GitHub"><i class="fa-brands fa-github"></i></a>
           </div>
           <div class="sla-small">
             Eskom schedules vary. Always verify with your local municipality when in doubt.
